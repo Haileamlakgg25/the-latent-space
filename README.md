@@ -1,4 +1,5 @@
 # The Latent Space
+> 🌐 **Live Link:** [the-latent-space-phi.vercel.app](https://the-latent-space-phi.vercel.app/)
 
 This is my personal blog where I write about the technical things I am learning and interested in, specifically deep learning, neural networks, large language models (LLMs), and neuroscience. 
 
