@@ -14,8 +14,9 @@ I chose these tools to keep the site fast, clean, and highly readable:
 
 ##  Current Posts Inside
 
-1. **The Token Routing Crisis**: A post looking at the math behind Mixture-of-Experts (MoE) models, how tokens move across different GPUs, and why hardware limits are shifting from processing power to network speeds.
-2. **The Synaptic Divergence**: A short comparison looking at how artificial neural networks compare to biological brains in terms of power efficiency and learning.
+1. **Beyond the Hype: What Really Happens Behind Frontier AI Models**: A clear breakdown of how modern frontier models like GPT, Claude, and Gemini work behind the scenes, why they feel different, and why the future of AI is becoming more about systems than single chatbots.
+2. **The Token Routing Crisis**: A post looking at the math behind Mixture-of-Experts (MoE) models, how tokens move across different GPUs, and why hardware limits are shifting from processing power to network speeds.
+3. **The Synaptic Divergence**: A short comparison looking at how artificial neural networks compare to biological brains in terms of power efficiency and learning.
 
 ##  How to Run it Locally
 
