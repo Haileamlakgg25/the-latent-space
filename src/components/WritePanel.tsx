@@ -61,6 +61,7 @@ export default function WritePanel({ onPublish }: WritePanelProps) {
                 <option value="LLMs">LLMs</option>
                 <option value="Generative AI">Generative AI</option>
                 <option value="Systems Architecture">Systems Architecture</option>
+                <option value="AI Systems">AI Systems</option>
               </select>
             </div>
             <div>

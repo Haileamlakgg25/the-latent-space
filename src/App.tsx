@@ -31,7 +31,9 @@ export default function App() {
               The Latent Space
             </h1>
             <p className="text-xs text-slate-400 leading-relaxed">
-              An independent engineering ledger documenting high-dimensional vector mappings, deep learning mechanics, transformer scaling, and structural cognitive neuroscience.
+              A personal space where I write about and explore my interests in AI, machine learning, LLMs, neural networks, system architecture, and the technologies behind modern intelligent systems — from deep learning and multimodal AI to agents, RAG, and model orchestration.
+
+
             </p>
           </header>
 
@@ -41,7 +43,7 @@ export default function App() {
               Research Domains
             </h3>
             <div className="flex flex-col gap-1 text-xs font-medium">
-              {['All', 'Deep Learning', 'LLMs', 'Generative AI', 'Systems Architecture'].map((domain) => (
+              {['All', 'Deep Learning', 'LLMs', 'Generative AI', 'Systems Architecture', 'AI Systems'].map((domain) => (
                 <button
                   key={domain}
                   onClick={() => setActiveTaxonomy(domain)}

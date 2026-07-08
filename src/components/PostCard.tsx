@@ -53,60 +53,148 @@ export default function PostCard({ post }: PostCardProps) {
     });
   };
 
+  const normalizeInlineHtml = (text: string) => {
+    return text
+      .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+      .replace(/<[^>]+>/g, '');
+  };
+
+  const getOrderedListItem = (text: string) => {
+    return text.match(/^(\d+)\.\s+(.*)$/);
+  };
+
   // Global Structural Parser Block
   const renderFormattedContent = (content: string) => {
-    return content.split('\n').map((paragraph, index) => {
+    const lines = content.split('\n');
+    const elements = [];
+    let index = 0;
+
+    while (index < lines.length) {
+      const paragraph = lines[index];
       const trimmed = paragraph.trim();
+
+      if (!trimmed) {
+        index += 1;
+        continue;
+      }
 
       // Centered Math Blocks ($$ formula $$)
       if (trimmed.startsWith('$$') && trimmed.endsWith('$$')) {
         const formula = trimmed.slice(2, -2).trim();
-        return (
+        elements.push(
           <div key={index} className="my-6 overflow-x-auto py-2 text-center bg-slate-900/40 rounded-lg border border-slate-900 px-4">
             <MathRenderer formula={formula} displayMode={true} />
           </div>
         );
+        index += 1;
+        continue;
+      }
+
+      // Section Subheaders (#### Title)
+      if (trimmed.startsWith('####')) {
+        elements.push(
+          <h4 key={index} className="text-xs font-bold text-slate-200 mt-5 mb-2 tracking-tight">
+            {trimmed.replace(/^####\s*/, '').trim()}
+          </h4>
+        );
+        index += 1;
+        continue;
       }
 
       // Section Headers (### Title)
       if (trimmed.startsWith('###')) {
-        return (
+        elements.push(
           <h3 key={index} className="text-sm font-bold text-indigo-400 mt-6 mb-2 tracking-tight uppercase">
-            {trimmed.replace('###', '').trim()}
+            {trimmed.replace(/^###\s*/, '').trim()}
           </h3>
         );
+        index += 1;
+        continue;
       }
 
       // Visual Split Lines (---)
       if (trimmed === '---') {
-        return <hr key={index} className="border-slate-900 my-6" />;
+        elements.push(<hr key={index} className="border-slate-900 my-6" />);
+        index += 1;
+        continue;
+      }
+
+      // HTML ordered lists from article content
+      if (trimmed === '<ol>') {
+        const items = [];
+        index += 1;
+
+        while (index < lines.length && lines[index].trim() !== '</ol>') {
+          const itemMatch = lines[index].trim().match(/^<li>(.*)<\/li>$/);
+
+          if (itemMatch) {
+            items.push(normalizeInlineHtml(itemMatch[1]));
+          }
+
+          index += 1;
+        }
+
+        elements.push(
+          <ol key={`ol-${index}`} className="list-decimal pl-5 space-y-2 my-4 text-xs text-slate-300 leading-relaxed">
+            {items.map((item, itemIndex) => (
+              <li key={itemIndex}>{renderInlineStyles(item)}</li>
+            ))}
+          </ol>
+        );
+        index += 1;
+        continue;
       }
 
       // Bullet Lists (* item)
-      if (trimmed.startsWith('*')) {
-        return (
-          <ul key={index} className="list-disc pl-5 space-y-1 my-2 text-slate-300">
-            <li>{renderInlineStyles(trimmed.replace('*', '').trim())}</li>
+      if (/^[-*]\s+/.test(trimmed)) {
+        const items = [];
+
+        while (index < lines.length && /^[-*]\s+/.test(lines[index].trim())) {
+          items.push(lines[index].trim().replace(/^[-*]\s+/, '').trim());
+          index += 1;
+        }
+
+        elements.push(
+          <ul key={`ul-${index}`} className="list-disc pl-5 space-y-1 my-3 text-xs text-slate-300 leading-relaxed">
+            {items.map((item, itemIndex) => (
+              <li key={itemIndex}>{renderInlineStyles(item)}</li>
+            ))}
           </ul>
         );
+        continue;
       }
 
       // Enumerated Lists (1. item)
-      if (/^\d+\./.test(trimmed)) {
-        return (
-          <ol key={index} className="list-decimal pl-5 space-y-1 my-2 text-slate-300">
-            <li>{renderInlineStyles(trimmed.replace(/^\d+\./, '').trim())}</li>
+      if (getOrderedListItem(trimmed)) {
+        const items = [];
+        const startNumber = Number(getOrderedListItem(trimmed)?.[1] ?? 1);
+
+        while (index < lines.length && getOrderedListItem(lines[index].trim())) {
+          const itemMatch = getOrderedListItem(lines[index].trim());
+          items.push(itemMatch?.[2].trim() ?? '');
+          index += 1;
+        }
+
+        elements.push(
+          <ol key={`ol-${index}`} start={startNumber} className="list-decimal pl-5 space-y-2 my-4 text-xs text-slate-300 leading-relaxed">
+            {items.map((item, itemIndex) => (
+              <li key={itemIndex}>{renderInlineStyles(item)}</li>
+            ))}
           </ol>
         );
+        continue;
       }
 
       // Standard Paragraph
-      return (
+      elements.push(
         <p key={index} className="text-xs text-slate-300 leading-relaxed mb-4 antialiased">
           {renderInlineStyles(paragraph)}
         </p>
       );
-    });
+      index += 1;
+    }
+
+    return elements;
   };
 
   return (
