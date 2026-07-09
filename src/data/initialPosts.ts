@@ -1,6 +1,69 @@
 import type { BlogPost } from '../types/blog';
 
-export const initialPosts: BlogPost[] = [    
+export const initialPosts: BlogPost[] = [
+   {
+    id: 'llm-quantization-local-inference-2026',
+    title: 'Shrinking the Brain: The Engineering Reality of LLM Quantization and Local Inference',
+    slug: 'llm-quantization-local-inference',
+    date: 'July 9, 2026',
+    category: 'LLMs',
+    readTime: '6 min read',
+    excerpt:
+      'A deep dive into the mathematics of quantization and the engineering realities of moving beyond third-party APIs to deploy Large Language Models on local infrastructure.',
+    content: `Relying entirely on third-party APIs for Large Language Models is excellent for prototyping, but moving into production often exposes the harsh realities of latency, cost, and data privacy. For full-stack developers looking to integrate AI deeper into their architecture, local model deployment is the logical next step. 
+
+However, downloading a model from Hugging Face and serving it through a local endpoint introduces a massive hardware bottleneck: the Memory Wall. Here is a look into the mathematics of quantization and what it means for backend infrastructure.
+
+---
+
+### 1. The VRAM Bottleneck
+
+When we discuss the size of an LLM, we are primarily talking about its parameters (the weights and biases). By default, these parameters are stored as 16-bit floating-point numbers (FP16). 
+
+A standard 7-billion parameter model like Llama 3 requires 2 bytes of memory per parameter. That means just loading the weights into memory requires roughly 14 GB of VRAM. This doesn't even account for the KV cache needed to process context during inference. For an enterprise-scale 70B model, the hardware requirements quickly scale out of reach for a single consumer GPU.
+
+---
+
+### 2. The Mathematics of Quantization
+
+To deploy these models on constrained hardware, we have to compress the weights. Quantization is the process of mapping high-precision numbers (like FP16) to lower-precision formats (like INT8 or INT4). 
+
+The most common approach is symmetric linear quantization. We find the maximum absolute value in a tensor and calculate a scaling factor to map the floating-point values into an integer range. For INT8, the range is [-127, 127]. 
+
+The scaling factor $S$ is calculated as:
+
+$$S = \\frac{\\max(|x|)}{2^{b-1} - 1}$$
+
+Where $b$ is the number of bits (e.g., 8). The quantized value $x_q$ is then determined by dividing the original value by the scale and rounding to the nearest integer:
+
+$$x_q = \\text{round}\\left(\\frac{x}{S}\\right)$$
+
+During inference, the matrix multiplications are performed using the compressed INT8 or INT4 integers, and the result is "dequantized" back to FP16 by multiplying it by $S$. This drastically reduces memory bandwidth, which is the primary choke point in LLM generation speeds.
+
+---
+
+### 3. Formats That Matter: GGUF vs. AWQ
+
+From an architecture perspective, choosing the right quantization format determines how your backend will interact with the model.
+
+* **GGUF (GPT-Generated Unified Format)** Optimized for CPU inference using frameworks like \`llama.cpp\`. It offloads specific layers to the GPU if available, making it highly versatile for servers without dedicated high-end GPUs.
+
+* **AWQ (Activation-Aware Weight Quantization)** Optimized purely for GPUs. Instead of treating all weights equally, AWQ identifies the top 1% of "salient" weights that are most critical for accuracy and leaves them in higher precision while aggressively compressing the rest.
+
+---
+
+### 4. Integrating Local Inference into the Backend Stack
+
+When you shift from calling OpenAI's API to querying a local quantized model, the architecture of your Node.js backend must adapt. 
+
+1. **Process Management** Local inference engines (like \`vLLM\` or \`Ollama\`) run as separate processes. Your TypeScript backend now acts as a reverse proxy and orchestrator, managing requests between the React frontend and the local inference server.
+
+2. **Concurrency Limits** Unlike third-party APIs that can handle hundreds of concurrent requests, a local GPU has strict limits on batch sizes. Your API gateway must implement robust queueing (e.g., using Redis) to prevent Out of Memory (OOM) crashes when multiple users query the model simultaneously.
+
+3. **Streaming Bottlenecks** Because quantized models generate tokens locally, implementing WebSockets or Server-Sent Events (SSE) in your Express routes is mandatory to pipe the tokens directly to the client without buffering.
+
+Deploying models locally proves that building modern AI systems is as much about robust backend engineering and memory management as it is about the models themselves.`
+  },    
   {
     id: 'state-of-frontier-models-2026',
     title: 'Beyond the Hype: What Really Happens Behind Frontier AI Models',
